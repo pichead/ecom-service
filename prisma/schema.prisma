@@ -1,0 +1,173 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model admin {
+  id                  Int                   @id @default(autoincrement())
+  username            String                @unique @db.VarChar(255)
+  password            String                @db.VarChar(255)
+  fname               String?               @db.VarChar(255)
+  lname               String?               @db.VarChar(255)
+  email               String?               @unique @db.VarChar(255)
+  role                String                @default("admin")
+  permissions         Json?
+  phone               String?               @db.VarChar(10)
+  lineId              String?               @db.VarChar(255)
+  avatarPath          String?               @db.VarChar(255)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  isActive            Boolean               @default(true)
+  credit_transaction  credit_transaction[]
+  point_transaction   point_transaction[]
+  store_key           store_key[]
+  store_software_rent store_software_rent[]
+}
+
+model user {
+  id                             Int                              @id @default(autoincrement())
+  username                       String                           @unique @db.VarChar(255)
+  email                          String                           @unique @db.VarChar(255)
+  password                       String                           @db.VarChar(255)
+  fname                          String?                          @db.VarChar(255)
+  lname                          String?                          @db.VarChar(255)
+  role                           String                           @default("client")
+  phone                          String?                          @db.VarChar(10)
+  lineId                         String?                          @db.VarChar(255)
+  avatarPath                     String?                          @db.VarChar(255)
+  credit                         Int                              @default(0)
+  point                          Int                              @default(0)
+  createdAt                      DateTime                         @default(now())
+  updatedAt                      DateTime                         @updatedAt
+  isActive                       Boolean                          @default(true)
+  credit_transaction             credit_transaction[]
+  point_transaction              point_transaction[]
+  store_has_key                  store_has_key[]
+  software_rent_has_user         software_rent_has_user[]
+  user_has_software_rent_package user_has_software_rent_package[]
+}
+
+model credit_transaction {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      user     @relation(fields: [userId], references: [id])
+  adminId   Int?
+  admin     admin?   @relation(fields: [adminId], references: [id])
+  detail    String?  @db.VarChar(255)
+  remark    String?  @db.VarChar(255)
+  credit    Float
+  type      String   @db.VarChar(255)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model point_transaction {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      user     @relation(fields: [userId], references: [id])
+  adminId   Int?
+  admin     admin?   @relation(fields: [adminId], references: [id])
+  detail    String?  @db.VarChar(255)
+  remark    String?  @db.VarChar(255)
+  point     Int
+  type      String   @db.VarChar(255)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model store_key {
+  id            Int             @id @default(autoincrement())
+  name          String          @db.VarChar(255)
+  shortDes      String          @db.VarChar(255)
+  time          Int             @default(0)
+  des           String?         @db.Text
+  imgArr        Json?
+  adminId       Int
+  admin         admin           @relation(fields: [adminId], references: [id])
+  vdoLink       String?         @db.VarChar(255)
+  price         Float
+  isActive      Boolean         @default(false)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  store_has_key store_has_key[]
+}
+
+model store_has_key {
+  id          Int       @id @default(autoincrement())
+  store_keyId Int
+  store_key   store_key @relation(fields: [store_keyId], references: [id])
+  isActive    Boolean   @default(true)
+  used        Boolean   @default(false)
+  key         String    @unique @db.VarChar(255)
+  des         String    @db.Text
+  userId      Int?
+  user        user?     @relation(fields: [userId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model store_software_rent {
+  id                     Int                      @id @default(autoincrement())
+  name                   String                   @db.VarChar(255)
+  shortName              String                   @db.VarChar(255)
+  shortDes               String                   @db.VarChar(255)
+  des                    String?                  @db.Text
+  imgArr                 Json?
+  adminId                Int
+  downloadUrl            String                   @db.VarChar(255)
+  downloadName           String                   @db.VarChar(255)
+  admin                  admin                    @relation(fields: [adminId], references: [id])
+  vdoLink                String?                  @db.VarChar(255)
+  isActive               Boolean                  @default(true)
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  store_software_package store_software_package[]
+  software_rent_has_user software_rent_has_user[]
+}
+
+model store_software_package {
+  id                             Int                              @id @default(autoincrement())
+  name                           String                           @unique @db.VarChar(255)
+  des                            String?                          @db.VarChar(255)
+  price                          Float
+  time                           Int
+  unit                           String                           @db.VarChar(255)
+  unitEng                        String                           @db.VarChar(255)
+  store_software_rentId          Int
+  store_software_rent            store_software_rent              @relation(fields: [store_software_rentId], references: [id])
+  user_has_software_rent_package user_has_software_rent_package[]
+}
+
+model software_rent_has_user {
+  id                    Int                 @id @default(autoincrement())
+  userId                Int
+  user                  user                @relation(fields: [userId], references: [id])
+  store_software_rentId Int
+  store_software_rent   store_software_rent @relation(fields: [store_software_rentId], references: [id])
+  startTime             Int
+  endTime               Int
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+}
+
+model user_has_software_rent_package {
+  id                         Int                    @id @default(autoincrement())
+  userId                     Int
+  user                       user                   @relation(fields: [userId], references: [id])
+  store_software_packageId   Int
+  store_software_package     store_software_package @relation(fields: [store_software_packageId], references: [id])
+  store_software_package_raw Json?
+  createdAt                  DateTime               @default(now())
+}
+
+model tag {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(255)
+}
