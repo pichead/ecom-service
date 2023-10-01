@@ -29,6 +29,7 @@ model admin {
   point_transaction   point_transaction[]
   store_key           store_key[]
   store_software_rent store_software_rent[]
+  product             product[]
 }
 
 model user {
@@ -52,6 +53,78 @@ model user {
   store_has_key                  store_has_key[]
   software_rent_has_user         software_rent_has_user[]
   user_has_software_rent_package user_has_software_rent_package[]
+  user_address                   user_address[]
+}
+
+model user_address {
+  id               Int     @id @default(autoincrement())
+  name             String  @db.VarChar(255)
+  userId           Int
+  user             user    @relation(fields: [userId], references: [id])
+  receiverFullName String  @db.VarChar(255)
+  receiverEmail    String? @db.VarChar(255)
+  receiverPhone    String  @db.VarChar(10)
+  default          Boolean @default(false)
+  province         String  @db.VarChar(255)
+  district         String  @db.VarChar(255)
+  subdistrict      String  @db.VarChar(255)
+  postcode         String  @db.VarChar(255)
+}
+
+model category {
+  id            Int            @id @default(autoincrement())
+  cardImgName   String?        @db.VarChar(255)
+  cardImgPath   String?        @db.VarChar(255)
+  bannerImgName String?        @db.VarChar(255)
+  bannerImgPath String?        @db.VarChar(255)
+  name          String         @db.VarChar(255)
+  description   String?        @db.VarChar(255)
+  sub_category  sub_category[]
+  product       product[]
+}
+
+model sub_category {
+  id          Int       @id @default(autoincrement())
+  categoryId  Int
+  category    category  @relation(fields: [categoryId], references: [id])
+  name        String    @db.VarChar(255)
+  description String?   @db.VarChar(255)
+  product     product[]
+}
+
+model product {
+  id             Int          @id @default(autoincrement())
+  adminId        Int
+  admin          admin        @relation(fields: [adminId], references: [id])
+  name           String       @db.VarChar(255)
+  cardName       String       @db.VarChar(255)
+  des            String       @db.VarChar(255)
+  cardDes        String       @db.VarChar(255)
+  originalPrice  Float
+  cardImgName    String?      @db.VarChar(255)
+  cardImgPath    String?      @db.VarChar(255)
+  Images         Json?
+  isActive       Boolean      @default(true)
+  categoryId     Int
+  category       category     @relation(fields: [categoryId], references: [id])
+  subcategoryId  Int
+  sub_category   sub_category @relation(fields: [sub_categoryId], references: [id])
+  sub_categoryId Int
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  stock          Int          @default(0)
+}
+
+model product_model {
+  id        Int      @id @default(autoincrement())
+  sku       String   @unique @db.VarChar(255)
+  stock     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model product_option {
+  id Int @id @default(autoincrement())
 }
 
 model credit_transaction {
